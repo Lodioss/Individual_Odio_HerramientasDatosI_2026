@@ -1,0 +1,183 @@
+---
+title: "codigo Proyecyo individual"
+author: "Luis Odio"
+format: typst
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+stats.equipo <- read_csv("../data/teamStats.csv")
+stats.jugador <- read_csv("../data/playerStats.csv")
+stats.partido <- read_csv("../data/matchStats.csv")
+```
+
+### corregimos la tabla de stats.jugados para que `Team` coincida
+```{r}
+stats.jugador <- stats.jugador %>%
+  mutate(Team = case_when(
+    Team == "ARG" ~ "Argentina",
+    Team == "BRA" ~ "Brazil",
+    Team == "BUL" ~ "Bulgaria",
+    Team == "CAN" ~ "Canada",
+    Team == "CHN" ~ "China",
+    Team == "CUB" ~ "Cuba",
+    Team == "FRA" ~ "France",
+    Team == "GER" ~ "Germany",
+    Team == "IRI" ~ "Iran",
+    Team == "ITA" ~ "Italy",
+    Team == "JPN" ~ "Japan",
+    Team == "NED" ~ "Netherlands",
+    Team == "POL" ~ "Poland",
+    Team == "SLO" ~ "Slovenia",
+    Team == "SRB" ~ "Serbia",
+    Team == "TUR" ~ "Türkiye",
+    Team == "UKR" ~ "Ukraine",
+    Team == "USA" ~ "USA", 
+    TRUE ~ Team 
+  ))
+
+
+```
+
+
+#### Agrupamos las estadisticas de los jugadores por equipo
+```{r}
+ 
+jugadores.por.equipo <- stats.jugador %>%
+  group_by(Team) %>%
+  summarise(
+    Tamanio.Plantilla = n(),
+    Edad.Promedio = mean(Age, na.rm = TRUE),
+    Total.Ataques.Jugadores = sum(Kills, na.rm = TRUE),
+    Total.Bloqueos.Jugadores = sum(Blocks, na.rm = TRUE),
+    Total.Aces.Jugadores = sum(Aces, na.rm = TRUE),
+    Total.Grandes.Salvadas = sum(`Great Saves`, na.rm = TRUE),
+    Total.Recepciones = sum(`Successful Receives`, na.rm = TRUE),
+    .groups = 'drop'
+  )
+```
+
+#### transformamos la tabla de partidos en una que separe a los ganadores y perdedores del encuentro
+
+```{r}
+partidos.consolidados <- stats.partido %>%
+  mutate(
+    # Extraer estadísticas del equipo GANADOR
+    Ataques.Ganador = ifelse(Winner == `Home Team`, `Kills Home`, `Kills Away`),
+    Bloqueos.Ganador = ifelse(Winner == `Home Team`, `Blocks Home`, `Blocks Away`),
+    Aces.Ganador = ifelse(Winner == `Home Team`, `Aces Home`, `Aces Away`),
+    Recepciones.Ganador = ifelse(Winner == `Home Team`, `Receptions Home`, `Receptions Away`),
+    Errores.Rival.Ganador = ifelse(Winner == `Home Team`, `Opponents Errors Home`, `Opponents Errors Away`),
+    
+    # Extraer estadísticas del equipo PERDEDOR
+    Ataques.Perdedor = ifelse(Loser == `Home Team`, `Kills Home`, `Kills Away`),
+    Bloqueos.Perdedor = ifelse(Loser == `Home Team`, `Blocks Home`, `Blocks Away`),
+    Aces.Perdedor = ifelse(Loser == `Home Team`, `Aces Home`, `Aces Away`),
+    Recepciones.Perdedor = ifelse(Loser == `Home Team`, `Receptions Home`, `Receptions Away`),
+    Errores.Rival.Perdedor = ifelse(Loser == `Home Team`, `Opponents Errors Home`, `Opponents Errors Away`)
+  ) %>%
+  
+  select(
+    Date, Winner, Loser, 
+    Ataques.Ganador, Bloqueos.Ganador, Aces.Ganador, Recepciones.Ganador, Errores.Rival.Ganador,
+    Ataques.Perdedor, Bloqueos.Perdedor, Aces.Perdedor, Recepciones.Perdedor, Errores.Rival.Perdedor
+  )
+```
+
+#### creamos tabla equipos.consolidados que relaciona el exito del torneo con el desempenio de sus jugadores, por otro lado analitica.partidos, haciendo uso de equipos.consolidados, cruza el perfil del equipo con que sucedio en cada partido.
+
+```{r}
+equipos.consolidados <- stats.equipo %>%
+  left_join(jugadores.por.equipo, by = "Team")
+
+analitica.partidos <- partidos.consolidados %>%
+  left_join(equipos.consolidados, by = c("Winner" = "Team")) %>%
+  left_join(equipos.consolidados, by = c("Loser" = "Team"), suffix = c(".Ganador", ".Perdedor")) %>%
+  mutate(
+    Dif.Ataques = Ataques.Ganador - Ataques.Perdedor,
+    Dif.Bloqueos = Bloqueos.Ganador - Bloqueos.Perdedor,
+    Dif.Aces = Aces.Ganador - Aces.Perdedor,
+    Dif.Errores.Rival = Errores.Rival.Ganador - Errores.Rival.Perdedor
+  )
+
+head(analitica.partidos, 10)
+```
+
+```{r}
+grafico.aces.exito <- ggplot(equipos.consolidados, aes(x = Total.Aces.Jugadores, y = `Point Ratio` )) +
+  geom_point(aes(color = Rank), size = 4) +
+  geom_smooth(method = "lm", se = FALSE, color = "darkred", fill = "pink") +
+  geom_text(aes(label = Team), vjust = -1, size = 3) +
+  scale_color_viridis_c(direction = -1) +
+  theme_minimal() +
+  labs(title = "Correlación Positiva: Poder de Saque vs Dominio del Torneo",
+       subtitle = "A mayor cantidad de Aces, mejor es el ratio de puntos general.",
+       x = "Total de Aces del Equipo",
+       y = "Ratio de Puntos (Point.Ratio)")
+
+print(grafico.aces.exito)
+
+
+grafico.ataques.defensa <- ggplot(equipos.consolidados, aes(x = Total.Ataques.Jugadores, y = Total.Grandes.Salvadas)) +
+  geom_point(aes(color = Rank), size = 4) +
+  geom_smooth(method = "lm", se = FALSE, color = "darkblue", fill = "lightblue") +
+  geom_text(aes(label = Team), vjust = 1.5, size = 3) +
+  scale_color_viridis_c(direction = -1) +
+  theme_minimal() +
+  labs(title = "Correlación Positiva: Volumen de Ataque vs Volumen Defensivo",
+       subtitle = "La agresividad ofensiva y la solidez defensiva crecen de la mano.",
+       x = "Total de Ataques (Kills)",
+       y = "Total de Grandes Salvadas (Great Saves)")
+
+print(grafico.ataques.defensa)
+
+
+
+
+grafico.merito.vs.errores <- ggplot(analitica.partidos, aes(x = Dif.Ataques, y = Dif.Errores.Rival)) +
+  geom_point(alpha = 0.6, color = "purple", size = 3) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed") +
+  theme_minimal() +
+  labs(title = "Correlación Negativa: Ataques Propios vs Dependencia del Error Rival",
+       subtitle = "A mayor ventaja en ataques propios, menor dependencia de los regalos del rival.",
+       x = "Diferencial de Ataques (Ganador - Perdedor)",
+       y = "Diferencial de Errores del Rival")
+
+print(grafico.merito.vs.errores)
+```
+
+#### graficos generados por Google(2026)
+
+```{r}
+# Seleccionar variables de rendimiento y escalar
+datos.pca <- equipos.consolidados %>% 
+  select(Total.Ataques.Jugadores, Total.Bloqueos.Jugadores, Total.Aces.Jugadores, Total.Grandes.Salvadas, Total.Recepciones) %>%
+  drop_na(Total.Ataques.Jugadores, Total.Bloqueos.Jugadores, Total.Aces.Jugadores, Total.Grandes.Salvadas, Total.Recepciones)
+
+equipos.pca <- equipos.consolidados %>%
+  drop_na(Total.Ataques.Jugadores, Total.Bloqueos.Jugadores, Total.Aces.Jugadores, Total.Grandes.Salvadas, Total.Recepciones)
+
+modelo.pca <- prcomp(datos.pca, scale. = TRUE)
+
+# Preparar datos para graficar
+pca.grafico <- as.data.frame(modelo.pca$x)
+pca.grafico$Equipo <- equipos.pca$Team
+pca.grafico$Rank <- equipos.pca$Rank
+
+# Visualizar Mapa de Estilos
+ggplot(pca.grafico, aes(x = PC1, y = PC2, label = Equipo, color = Rank)) +
+  geom_point(size = 4) +
+  geom_text(vjust = -1, size = 3.5, color = "black") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +
+  scale_color_viridis_c(direction = -1) +
+  theme_minimal() +
+  labs(title = "Mapa de Estilos de Juego (PCA)",
+       x = "PC1 (Volumen General de Juego)",
+       y = "PC2 (Especialización Ofensiva vs Defensiva)")
+```
+
