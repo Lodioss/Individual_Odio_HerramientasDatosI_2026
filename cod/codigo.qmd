@@ -7,6 +7,7 @@ editor: visual
 
 ```{r}
 library(tidyverse)
+library(randomForest)
 ```
 
 ```{r}
@@ -16,6 +17,7 @@ stats.partido <- read_csv("../data/matchStats.csv")
 ```
 
 ### corregimos la tabla de stats.jugados para que `Team` coincida
+
 ```{r}
 stats.jugador <- stats.jugador %>%
   mutate(Team = case_when(
@@ -43,8 +45,8 @@ stats.jugador <- stats.jugador %>%
 
 ```
 
-
 #### Agrupamos las estadisticas de los jugadores por equipo
+
 ```{r}
  
 jugadores.por.equipo <- stats.jugador %>%
@@ -52,6 +54,7 @@ jugadores.por.equipo <- stats.jugador %>%
   summarise(
     Tamanio.Plantilla = n(),
     Edad.Promedio = mean(Age, na.rm = TRUE),
+    Altura.Promedio = mean(parse_number(as.character(Height)), na.rm = TRUE),
     Total.Ataques.Jugadores = sum(Kills, na.rm = TRUE),
     Total.Bloqueos.Jugadores = sum(Blocks, na.rm = TRUE),
     Total.Aces.Jugadores = sum(Aces, na.rm = TRUE),
@@ -181,3 +184,82 @@ ggplot(pca.grafico, aes(x = PC1, y = PC2, label = Equipo, color = Rank)) +
        y = "PC2 (Especialización Ofensiva vs Defensiva)")
 ```
 
+```{r}
+
+
+
+set.seed(42)
+datos.ml <- stats.partido %>%
+  mutate(
+    # Aleatorizar quién es A y quién es B
+    Es.Local.A = ifelse(runif(n()) > 0.5, TRUE, FALSE),
+    Victoria.A = as.factor(ifelse((Es.Local.A & Winner == `Home Team`) | 
+                                  (!Es.Local.A & Winner == `Away Team`), 1, 0)),
+    
+    Nombre.Equipo.A = ifelse(Es.Local.A, `Home Team`, `Away Team`),
+    Nombre.Equipo.B = ifelse(Es.Local.A, `Away Team`, `Home Team`),
+    
+    # Diferenciales Tácticos de Equipo A vs Equipo B
+    Ataques.A = ifelse(Es.Local.A, `Kills Home`, `Kills Away`),
+    Ataques.B = ifelse(Es.Local.A, `Kills Away`, `Kills Home`),
+    Bloqueos.A = ifelse(Es.Local.A, `Blocks Home`, `Blocks Away`),
+    Bloqueos.B = ifelse(Es.Local.A, `Blocks Away`, `Blocks Home`),
+    Aces.A = ifelse(Es.Local.A, `Aces Home`, `Aces Away`),
+    Aces.B = ifelse(Es.Local.A, `Aces Away`, `Aces Home`),
+    Errores.Rival.A = ifelse(Es.Local.A, `Opponents Errors Home`, `Opponents Errors Away`),
+    Errores.Rival.B = ifelse(Es.Local.A, `Opponents Errors Away`, `Opponents Errors Home`),
+    
+    Dif.Ataques = Ataques.A - Ataques.B,
+    Dif.Bloqueos = Bloqueos.A - Bloqueos.B,
+    Dif.Aces = Aces.A - Aces.B,
+    Dif.Errores.Rival = Errores.Rival.A - Errores.Rival.B
+  ) %>%
+  
+  left_join(equipos.consolidados, by = c("Nombre.Equipo.A" = "Team")) %>%
+  left_join(equipos.consolidados, by = c("Nombre.Equipo.B" = "Team"), suffix = c(".A", ".B")) %>%
+  mutate(
+    Dif.Altura = Altura.Promedio.A - Altura.Promedio.B,
+    Dif.Edad = Edad.Promedio.A - Edad.Promedio.B
+  ) %>%
+  # Seleccionamos solo lo que va al modelo
+  select(Victoria.A, Dif.Ataques, Dif.Bloqueos, Dif.Aces, Dif.Errores.Rival, Dif.Altura, Dif.Edad) %>%
+  na.omit() 
+
+# 2. Entrenar Modelo
+ modelo.rf <- randomForest(Victoria.A ~ ., data = datos.ml, ntree = 1000, importance = TRUE)
+
+# 3. Gráfico de Importancia
+importancia.rf <- as.data.frame(importance(modelo.rf))
+importancia.rf$Variable <- rownames(importancia.rf)
+
+importancia.rf <- importancia.rf %>%
+  arrange(MeanDecreaseGini) %>%
+  mutate(Variable = factor(Variable, levels = Variable))
+
+grafico.importancia.final <- ggplot(importancia.rf, aes(x = MeanDecreaseGini, y = Variable)) +
+  
+  geom_col(aes(fill = MeanDecreaseGini), width = 0.65, show.legend = FALSE, color = "black", linewidth = 0.3) +
+  geom_text(aes(label = round(MeanDecreaseGini, 2)), hjust = -0.3, color = "black", size = 4.5, fontface = "bold") +
+  scale_fill_gradient(low = "#b3cde0", high = "#011f4b") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.15))) +
+  
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Fuerza Predictiva de los Factores de Juego",
+    # Agregamos \n para dividir el texto en dos líneas
+    subtitle = "Nivel de importancia de cada variable para predecir\nla victoria (Random Forest).",
+    x = "Disminución Media de Gini (Poder Predictivo)",
+    y = NULL 
+  ) +
+  theme(
+    plot.title = element_text(face = "bold", color = "#1a1a1a", size = 16),
+    plot.subtitle = element_text(color = "gray40", size = 12, margin = ggplot2::margin(b = 15)),
+    axis.text.y = element_text(face = "bold", color = "black", size = 12),
+    axis.title.x = element_text(margin = ggplot2::margin(t = 10)),
+    panel.grid.major.y = element_blank(), 
+    panel.grid.minor.x = element_blank(),
+    plot.margin = ggplot2::margin(t = 15, r = 20, b = 15, l = 10) 
+  )
+
+print(grafico.importancia.final)
+```
