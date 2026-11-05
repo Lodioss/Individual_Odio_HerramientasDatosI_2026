@@ -184,36 +184,6 @@ print(grafico.importancia.final)
 ```
 
 ```{r}
-partido.simulado <- data.frame(
-  Dif.Ataques = 8,           
-  Dif.Bloqueos = 4,         
-  Dif.Aces = -1,             
-  Dif.Errores.Rival = -6,    
-  Dif.Altura = 3.5,          
-  Dif.Edad = -1.2            
-)
-
-
-prediccion.resultado <- predict(modelo.rf, newdata = partido.simulado)
-
-
-prediccion.probabilidad <- predict(modelo.rf, newdata = partido.simulado, type = "prob")
-
-
-tabla.resultados <- data.frame(
-  Escenario = "Equipo A vs Equipo B",
-  Probabilidad.Derrota = paste0(round(prediccion.probabilidad[1, "0"] * 100, 1), "%"),
-  Probabilidad.Victoria = paste0(round(prediccion.probabilidad[1, "1"] * 100, 1), "%"),
-  Veredicto = ifelse(prediccion.resultado == "1", "Gana Equipo A", "Gana Equipo B")
-)
-
-# Imprimir como tabla profesional en Quarto
-kable(tabla.resultados,
-      caption = "Tabla 1. Simulador de Probabilidades mediante Random Forest.",
-      align = 'c')
-```
-
-```{r}
 tabla.comparativa <- stats.partido %>%
   mutate(
     Equipo.A = `Home Team`,
