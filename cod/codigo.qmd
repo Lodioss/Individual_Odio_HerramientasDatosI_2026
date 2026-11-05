@@ -184,55 +184,6 @@ print(grafico.importancia.final)
 ```
 
 ```{r}
-tabla.comparativa <- stats.partido %>%
-  mutate(
-    Equipo.A = `Home Team`,
-    Equipo.B = `Away Team`,
-    Ganador.Real = Winner,
-    
-    
-    Dif.Ataques = `Kills Home` - `Kills Away`,
-    Dif.Bloqueos = `Blocks Home` - `Blocks Away`,
-    Dif.Aces = `Aces Home` - `Aces Away`,
-    Dif.Errores.Rival = `Opponents Errors Home` - `Opponents Errors Away`
-  ) %>%
-  left_join(equipos.consolidados, by = c("Equipo.A" = "Team")) %>%
-  left_join(equipos.consolidados, by = c("Equipo.B" = "Team"), suffix = c(".A", ".B")) %>%
-  mutate(
-    Dif.Altura = Altura.Promedio.A - Altura.Promedio.B,
-    Dif.Edad = Edad.Promedio.A - Edad.Promedio.B
-  ) %>%
-  
-  na.omit() 
-
-
-predicciones.tabla <- predict(modelo.rf, newdata = tabla.comparativa)
-
-
-tabla.visual.pdf <- tabla.comparativa %>%
-  mutate(
-    
-    Ganador.Predicho = ifelse(predicciones.tabla == "1", Equipo.A, Equipo.B),
-  
-    Partido = paste(Equipo.A, "vs", Equipo.B)
-  ) %>%
- 
-  select(Partido, `Ganador Real` = Ganador.Real, `Predicción Modelo` = Ganador.Predicho)
-
-
-kable(head(tabla.visual.pdf, 10), 
-      caption = "Tabla 2. Comparación de Resultados Reales vs Predicciones del Random Forest (Muestra de 10 partidos).",
-      align = 'c')
-```
-
-```{r}
-porcentaje.acierto <- mean(tabla.visual.pdf$`Ganador Real` == tabla.visual.pdf$`Predicción Modelo`) * 100
-
-# Imprime el resultado formateado
-print(paste0("Precisión del modelo: ", round(porcentaje.acierto, 1), "%"))
-```
-
-```{r}
 datos.matriz <- as.data.frame(table(
   Realidad = ifelse(datos.ml$Victoria.A == "1", "Victoria Real", "Derrota Real"),
   Prediccion = ifelse(modelo.rf$predicted == "1", "Predijo Victoria", "Predijo Derrota")
