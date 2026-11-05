@@ -8,6 +8,7 @@ editor: visual
 ```{r}
 library(tidyverse)
 library(randomForest)
+library(knitr)
 ```
 
 ```{r}
@@ -64,8 +65,6 @@ jugadores.por.equipo <- stats.jugador %>%
   )
 ```
 
-
-
 #### creamos tabla equipos.consolidados que relaciona el exito del torneo con el desempenio de sus jugadores, por otro lado analitica.partidos, haciendo uso de equipos.consolidados, cruza el perfil del equipo con que sucedio en cada partido.
 
 ```{r}
@@ -73,51 +72,6 @@ equipos.consolidados <- stats.equipo %>%
   left_join(jugadores.por.equipo, by = "Team")
 
 ```
-
-```{r}
-grafico.aces.exito <- ggplot(equipos.consolidados, aes(x = Total.Aces.Jugadores, y = `Point Ratio` )) +
-  geom_point(aes(color = Rank), size = 4) +
-  geom_smooth(method = "lm", se = FALSE, color = "darkred", fill = "pink") +
-  geom_text(aes(label = Team), vjust = -1, size = 3) +
-  scale_color_viridis_c(direction = -1) +
-  theme_minimal() +
-  labs(title = "Correlación Positiva: Poder de Saque vs Dominio del Torneo",
-       subtitle = "A mayor cantidad de Aces, mejor es el ratio de puntos general.",
-       x = "Total de Aces del Equipo",
-       y = "Ratio de Puntos (Point.Ratio)")
-
-print(grafico.aces.exito)
-
-
-grafico.ataques.defensa <- ggplot(equipos.consolidados, aes(x = Total.Ataques.Jugadores, y = Total.Grandes.Salvadas)) +
-  geom_point(aes(color = Rank), size = 4) +
-  geom_smooth(method = "lm", se = FALSE, color = "darkblue", fill = "lightblue") +
-  geom_text(aes(label = Team), vjust = 1.5, size = 3) +
-  scale_color_viridis_c(direction = -1) +
-  theme_minimal() +
-  labs(title = "Correlación Positiva: Volumen de Ataque vs Volumen Defensivo",
-       subtitle = "La agresividad ofensiva y la solidez defensiva crecen de la mano.",
-       x = "Total de Ataques (Kills)",
-       y = "Total de Grandes Salvadas (Great Saves)")
-
-print(grafico.ataques.defensa)
-
-
-
-
-grafico.merito.vs.errores <- ggplot(analitica.partidos, aes(x = Dif.Ataques, y = Dif.Errores.Rival)) +
-  geom_point(alpha = 0.6, color = "purple", size = 3) +
-  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed") +
-  theme_minimal() +
-  labs(title = "Correlación Negativa: Ataques Propios vs Dependencia del Error Rival",
-       subtitle = "A mayor ventaja en ataques propios, menor dependencia de los regalos del rival.",
-       x = "Diferencial de Ataques (Ganador - Perdedor)",
-       y = "Diferencial de Errores del Rival")
-
-print(grafico.merito.vs.errores)
-```
-
-#### graficos generados por Google(2026)
 
 ```{r}
 # Seleccionar variables de rendimiento y escalar
@@ -136,7 +90,7 @@ pca.grafico$Equipo <- equipos.pca$Team
 pca.grafico$Rank <- equipos.pca$Rank
 
 # Visualizar Mapa de Estilos
-ggplot(pca.grafico, aes(x = PC1, y = PC2, label = Equipo, color = Rank)) +
+pca.grafico.visual <- ggplot(pca.grafico, aes(x = PC1, y = PC2, label = Equipo, color = Rank)) +
   geom_point(size = 4) +
   geom_text(vjust = -1, size = 3.5, color = "black") +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
@@ -146,6 +100,8 @@ ggplot(pca.grafico, aes(x = PC1, y = PC2, label = Equipo, color = Rank)) +
   labs(title = "Mapa de Estilos de Juego (PCA)",
        x = "PC1 (Volumen General de Juego)",
        y = "PC2 (Especialización Ofensiva vs Defensiva)")
+
+print(pca.grafico.visual)
 ```
 
 ```{r}
@@ -225,4 +181,34 @@ grafico.importancia.final <- ggplot(importancia.rf, aes(x = MeanDecreaseGini, y 
   )
 
 print(grafico.importancia.final)
+```
+
+```{r}
+partido.simulado <- data.frame(
+  Dif.Ataques = 8,           
+  Dif.Bloqueos = 4,         
+  Dif.Aces = -1,             
+  Dif.Errores.Rival = -6,    
+  Dif.Altura = 3.5,          
+  Dif.Edad = -1.2            
+)
+
+
+prediccion.resultado <- predict(modelo.rf, newdata = partido.simulado)
+
+
+prediccion.probabilidad <- predict(modelo.rf, newdata = partido.simulado, type = "prob")
+
+
+tabla.resultados <- data.frame(
+  Escenario = "Equipo A vs Equipo B",
+  Probabilidad.Derrota = paste0(round(prediccion.probabilidad[1, "0"] * 100, 1), "%"),
+  Probabilidad.Victoria = paste0(round(prediccion.probabilidad[1, "1"] * 100, 1), "%"),
+  Veredicto = ifelse(prediccion.resultado == "1", "Gana Equipo A", "Gana Equipo B")
+)
+
+# Imprimir como tabla profesional en Quarto
+kable(tabla.resultados,
+      caption = "Tabla 1. Simulador de Probabilidades mediante Random Forest.",
+      align = 'c')
 ```
