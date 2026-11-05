@@ -64,32 +64,7 @@ jugadores.por.equipo <- stats.jugador %>%
   )
 ```
 
-#### transformamos la tabla de partidos en una que separe a los ganadores y perdedores del encuentro
 
-```{r}
-partidos.consolidados <- stats.partido %>%
-  mutate(
-    # Extraer estadísticas del equipo GANADOR
-    Ataques.Ganador = ifelse(Winner == `Home Team`, `Kills Home`, `Kills Away`),
-    Bloqueos.Ganador = ifelse(Winner == `Home Team`, `Blocks Home`, `Blocks Away`),
-    Aces.Ganador = ifelse(Winner == `Home Team`, `Aces Home`, `Aces Away`),
-    Recepciones.Ganador = ifelse(Winner == `Home Team`, `Receptions Home`, `Receptions Away`),
-    Errores.Rival.Ganador = ifelse(Winner == `Home Team`, `Opponents Errors Home`, `Opponents Errors Away`),
-    
-    # Extraer estadísticas del equipo PERDEDOR
-    Ataques.Perdedor = ifelse(Loser == `Home Team`, `Kills Home`, `Kills Away`),
-    Bloqueos.Perdedor = ifelse(Loser == `Home Team`, `Blocks Home`, `Blocks Away`),
-    Aces.Perdedor = ifelse(Loser == `Home Team`, `Aces Home`, `Aces Away`),
-    Recepciones.Perdedor = ifelse(Loser == `Home Team`, `Receptions Home`, `Receptions Away`),
-    Errores.Rival.Perdedor = ifelse(Loser == `Home Team`, `Opponents Errors Home`, `Opponents Errors Away`)
-  ) %>%
-  
-  select(
-    Date, Winner, Loser, 
-    Ataques.Ganador, Bloqueos.Ganador, Aces.Ganador, Recepciones.Ganador, Errores.Rival.Ganador,
-    Ataques.Perdedor, Bloqueos.Perdedor, Aces.Perdedor, Recepciones.Perdedor, Errores.Rival.Perdedor
-  )
-```
 
 #### creamos tabla equipos.consolidados que relaciona el exito del torneo con el desempenio de sus jugadores, por otro lado analitica.partidos, haciendo uso de equipos.consolidados, cruza el perfil del equipo con que sucedio en cada partido.
 
@@ -97,17 +72,6 @@ partidos.consolidados <- stats.partido %>%
 equipos.consolidados <- stats.equipo %>%
   left_join(jugadores.por.equipo, by = "Team")
 
-analitica.partidos <- partidos.consolidados %>%
-  left_join(equipos.consolidados, by = c("Winner" = "Team")) %>%
-  left_join(equipos.consolidados, by = c("Loser" = "Team"), suffix = c(".Ganador", ".Perdedor")) %>%
-  mutate(
-    Dif.Ataques = Ataques.Ganador - Ataques.Perdedor,
-    Dif.Bloqueos = Bloqueos.Ganador - Bloqueos.Perdedor,
-    Dif.Aces = Aces.Ganador - Aces.Perdedor,
-    Dif.Errores.Rival = Errores.Rival.Ganador - Errores.Rival.Perdedor
-  )
-
-head(analitica.partidos, 10)
 ```
 
 ```{r}
@@ -225,10 +189,10 @@ datos.ml <- stats.partido %>%
   select(Victoria.A, Dif.Ataques, Dif.Bloqueos, Dif.Aces, Dif.Errores.Rival, Dif.Altura, Dif.Edad) %>%
   na.omit() 
 
-# 2. Entrenar Modelo
+ #Entrenar Modelo
  modelo.rf <- randomForest(Victoria.A ~ ., data = datos.ml, ntree = 1000, importance = TRUE)
 
-# 3. Gráfico de Importancia
+ #Gráfico de Importancia
 importancia.rf <- as.data.frame(importance(modelo.rf))
 importancia.rf$Variable <- rownames(importancia.rf)
 
@@ -246,7 +210,6 @@ grafico.importancia.final <- ggplot(importancia.rf, aes(x = MeanDecreaseGini, y 
   theme_minimal(base_size = 14) +
   labs(
     title = "Fuerza Predictiva de los Factores de Juego",
-    # Agregamos \n para dividir el texto en dos líneas
     subtitle = "Nivel de importancia de cada variable para predecir\nla victoria (Random Forest).",
     x = "Disminución Media de Gini (Poder Predictivo)",
     y = NULL 
