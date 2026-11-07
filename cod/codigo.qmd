@@ -17,7 +17,7 @@ stats.jugador <- read_csv("../data/playerStats.csv")
 stats.partido <- read_csv("../data/matchStats.csv")
 ```
 
-### corregimos la tabla de stats.jugados para que `Team` coincida
+
 
 ```{r}
 stats.jugador <- stats.jugador %>%
@@ -46,7 +46,7 @@ stats.jugador <- stats.jugador %>%
 
 ```
 
-#### Agrupamos las estadisticas de los jugadores por equipo
+
 
 ```{r}
  
@@ -65,7 +65,7 @@ jugadores.por.equipo <- stats.jugador %>%
   )
 ```
 
-#### creamos tabla equipos.consolidados que relaciona el exito del torneo con el desempenio de sus jugadores, por otro lado analitica.partidos, haciendo uso de equipos.consolidados, cruza el perfil del equipo con que sucedio en cada partido.
+
 
 ```{r}
 equipos.consolidados <- stats.equipo %>%
