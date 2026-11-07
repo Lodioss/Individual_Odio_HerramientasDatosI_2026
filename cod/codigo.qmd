@@ -11,12 +11,14 @@ execute:
 ---
 
 ```{r}
+# cargamos las librerias necesarias
 library(tidyverse)
 library(randomForest)
 library(knitr)
 ```
 
 ```{r}
+# cargamos los datos 
 stats.equipo <- read_csv("../data/teamStats.csv")
 stats.jugador <- read_csv("../data/playerStats.csv")
 stats.partido <- read_csv("../data/matchStats.csv")
@@ -25,6 +27,7 @@ stats.partido <- read_csv("../data/matchStats.csv")
 
 
 ```{r}
+# arregla la tabla de stats.jugador para que 'Team' coincida con las otras tablas
 stats.jugador <- stats.jugador %>%
   mutate(Team = case_when(
     Team == "ARG" ~ "Argentina",
@@ -54,6 +57,7 @@ stats.jugador <- stats.jugador %>%
 
 
 ```{r}
+# Agrupa los jugadores por equipo y agrupa/promedia sus estadisticas
  
 jugadores.por.equipo <- stats.jugador %>%
   group_by(Team) %>%
@@ -73,6 +77,7 @@ jugadores.por.equipo <- stats.jugador %>%
 
 
 ```{r}
+# crea el df equipos.consolidados, el cual combina la informacion del equipo(vicotorias, ranking) con jugadores.por.equipo
 equipos.consolidados <- stats.equipo %>%
   left_join(jugadores.por.equipo, by = "Team")
 
@@ -189,6 +194,8 @@ print(grafico.importancia.final)
 ```
 
 ```{r}
+
+# cruza las filas reales vs las predicciones para contar cuántos partidos caen en cada cuadrante (aciertos y errores)
 datos.matriz <- as.data.frame(table(
   Realidad = ifelse(datos.ml$Victoria.A == "1", "Victoria Real", "Derrota Real"),
   Prediccion = ifelse(modelo.rf$predicted == "1", "Predijo Victoria", "Predijo Derrota")
