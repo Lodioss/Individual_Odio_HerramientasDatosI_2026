@@ -12,7 +12,10 @@ execute:
 
 ```{r}
 # cargamos las librerias necesarias
-library(tidyverse)
+library(ggplot2)
+library(readr)
+library(tidyr)
+library(dplyr)
 library(randomForest)
 library(knitr)
 ```
