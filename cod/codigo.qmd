@@ -1,8 +1,13 @@
 ---
 title: "codigo Proyecyo individual"
 author: "Luis Odio"
-format: typst
-editor: visual
+format: 
+  typst:
+    font-size: 12pt
+execute:
+  echo: false
+  warning: false
+  message: false
 ---
 
 ```{r}
