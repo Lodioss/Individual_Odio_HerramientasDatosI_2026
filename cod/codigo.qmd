@@ -9,7 +9,11 @@ execute:
   warning: false
   message: false
 ---
-
+# Análisis Predictivo y Táctico del Voleibol Moderno Masculino
+**Herramientas de Ciencia de Datos 1**\
+**Luis Odio** (Carnet: C5H973)\
+Profesor: Luis Alberto Juárez Potoy\
+Noviembre de 2026
 ```{r}
 # cargamos las librerias necesarias
 library(ggplot2)
@@ -85,6 +89,17 @@ equipos.consolidados <- stats.equipo %>%
   left_join(jugadores.por.equipo, by = "Team")
 
 ```
+
+# 1 Introduccion
+
+El voleibol a traves de los años a pasado de ser un simple juego de pasar una bola sobre una net, a convertirse en un deporte sumamente exigento no unicamente a nivel fisico si no que tambien a nivel tactico. Esto a llevado a que las selecciones de elite tengan por pilar fundamental el analisis de datos deportivos. Historicamente se ha discutido si el exito de un pais depende  de ventajas biometricas, como lo son la estatura o la veterania de los jugadores, o de la habilidad tecnica que se tenga en las bases del deporte(ataques, recepcion). El conseguir entender que separa a un equipo ganador de uno perdedor es de gran importancia para el reclutamiento de una seleccion, tanto como para el desarrollo de sus estrategias.
+
+En este reporte se busca encontrar cuales variables tienen la mayor influencia en la predictibilidad de un partido internacional de voleibol. Para esto se analizaran registros de partidos oficiale y perfiles de los jugadores, esto mediante un analisis de componentes principales para identificar la eficacia de estilos de juego, y un modelo de Bosques aleatorios para evaluar el peso de cada variable en los partidos.
+
+
+
+
+
 
 ```{r}
 # Seleccionar variables de rendimiento y escalar
