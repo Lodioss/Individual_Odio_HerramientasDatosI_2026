@@ -154,12 +154,15 @@ datos.ml <- stats.partido %>%
     Bloqueos.B = ifelse(Es.Local.A, `Blocks Away`, `Blocks Home`),
     Aces.A = ifelse(Es.Local.A, `Aces Home`, `Aces Away`),
     Aces.B = ifelse(Es.Local.A, `Aces Away`, `Aces Home`),
+    Defensas.A = ifelse(Es.Local.A, `Receptions Home`, `Receptions Away`),
+    Defensas.B = ifelse(Es.Local.A, `Receptions Away`, `Receptions Home`),
     Errores.Rival.A = ifelse(Es.Local.A, `Opponents Errors Home`, `Opponents Errors Away`),
     Errores.Rival.B = ifelse(Es.Local.A, `Opponents Errors Away`, `Opponents Errors Home`),
     
     Dif.Ataques = Ataques.A - Ataques.B,
     Dif.Bloqueos = Bloqueos.A - Bloqueos.B,
     Dif.Aces = Aces.A - Aces.B,
+    Dif.Defensas = Defensas.A - Defensas.B,
     Dif.Errores.Rival = Errores.Rival.A - Errores.Rival.B
   ) %>%
   
@@ -170,7 +173,7 @@ datos.ml <- stats.partido %>%
     Dif.Edad = Edad.Promedio.A - Edad.Promedio.B
   ) %>%
   # Seleccionamos solo lo que va al modelo
-  select(Victoria.A, Dif.Ataques, Dif.Bloqueos, Dif.Aces, Dif.Errores.Rival, Dif.Altura, Dif.Edad) %>%
+  select(Victoria.A, Dif.Ataques, Dif.Bloqueos, Dif.Aces, Dif.Defensas, Dif.Errores.Rival, Dif.Altura, Dif.Edad) %>%
   na.omit() 
 
  #Entrenar Modelo
