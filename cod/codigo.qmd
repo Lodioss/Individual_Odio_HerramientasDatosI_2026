@@ -156,6 +156,13 @@ Los datos analizados fueron publicados por Owen(2026), los datos consisten de 3 
 
 A estos datos se les realizo un proceso de limpieza para que coincidiera el nombre del pais en los tres archivos. Para consolidar los datos se  sumaron las estadisticas individuales de cada jugador para encontrar las metricas totales por plantilla y se promedio la edad y altura por pais, para posteriormente unirlo con los datos generales por pais para obtener una base que relacione el ranking con las caracteristicas fisicas y tecnicas de cada pais. finalmente se manipularon las estadisticas por partido para crear una base que contuviera los diferenciales de las variables a evaluar en el RandomForest, en esta se utilizo un 'na.omit()' para evitar sesgos en el algoritmo.
 
+#4 Metodologia
+
+Para encontrar los estilos de juego principales utilizo un Analisis de Componentes Principales (PCA) utilizando la funcion `prcomp()` estandarizando los datos. el PCA haciendo uso de la informacion sobre los ataques, bloques, saques y defensas de cada equipo, visualisando las tendencias tacticas y de volumen de juego en un plano cartesiano para revelar tendencias de como estos factores afectan al exito de un equipo
+
+El analisis predictivo se realizo por medio de el algoritmo Random Forest de la libreria `randomForest`(Liaw & Wiener, 2022), el cual construye arboles de decision independientes, en este caso 1000 arboles. Este modelo introduce dos niveles, el primero donde cada arbol se entrena con una muestra distinta de los datos y el segundo donde cada arbol ignora un dato, reduciendo asi la variabilidad del modelo, facilitando asi un posterior calculo de la importancia de cada variable, obsercando como disminuye el error de prediccion cuando dicha variable es utilizada, esto mediante el indice de gini.
+
+Finalmente se construyo una matriz de confusion para observar la precision del modelo, basandose en predicciones Out of Bag, es decir, el dato ignorado por cada arbol es el dato fuera de la bolsa, out of bag, y al modelo se le pide encontrar una prediccion sobre ese dato obligando a usar unicamente los arboles que no lo tomaron en cuenta, evitando que se lleguen a conclusiones incorrectas por los datos de entrenamiento del algoritmo.
 
 
 
