@@ -140,15 +140,8 @@ En este reporte se busca encontrar cuales variables tienen la mayor influencia e
 
 # 2 Objetivos
 
-**Objetivo general:** Analizar el impacto de los fundamentos tacticos varios y los factores biometricos en la probabilidad de gane de las selecciones internacionales de voleibol mediante herramientas de analisis y machine learning
+**Objetivo general:** Analizar el impacto de los fundamentos tacticos varios y los factores biometricos en la probabilidad de gane de las selecciones internacionales de voleibol mediante el Analisis de Componentes Principales (PCA) y el algoritmo de machine learnign de bosques aleatorios.
 
-**Objetivos específicos:** 
-
-1. Analizar el impacto de los distintos estils de juego en el exito internacional de las selecciones mediante un analisis de componentes principales(PCA) de los fundamentos tecnicos
-
-2. Determinar la importancia de las variables tecnicas y biometricas en el resultado de un partido haciendo uso de el modelo RandomForest
-
-3. Evaluar la capacidad predictiva del modelo mediante una matriz de confusion.
 
 #3 Datos
 
