@@ -183,7 +183,7 @@ Finalmente se construyo una matriz de confusion para observar la precision del m
 
 
 ```{r}
-#| fig-cap: "Figura 1. Mapa de Estilos de Juego (PCA). Grafico generado por Gemini(Google, 2026)"
+#| fig-cap: "Mapa de Estilos de Juego (PCA). Grafico generado por Gemini(Google, 2026)"
 #| fig-height: 4.9
 #| fig-width: 7
 # Seleccionar variables de rendimiento y escalar
@@ -224,7 +224,7 @@ Un caso sumamente interesante es el de japon, puesto que a poseer un volumen de 
 
 ## 5.2 Modelo Predictivo
 ```{r}
-#| fig-cap: "Figura 2. Fuerza Predictiva de los factores de juego. Grafico generado por Gemini(Google, 2026)"
+#| fig-cap: "Fuerza Predictiva de los factores de juego. Grafico generado por Gemini(Google, 2026)"
 #| fig-height: 4
 #| fig-width: 7
  #Entrenar Modelo
@@ -354,7 +354,7 @@ tabla.final
 
 ## anexos.2
 ```{r}
-#| fig-cap: "Figura 3. Aciertos y Errores del Modelo. Grafico generado por Gemini(Google, 2026)"
+#| fig-cap: "Aciertos y Errores del Modelo. Grafico generado por Gemini(Google, 2026)"
 #| fig-width: 7
 # cruza las filas reales vs las predicciones para contar cuántos partidos caen en cada cuadrante (aciertos y errores)
 datos.matriz <- as.data.frame(table(
