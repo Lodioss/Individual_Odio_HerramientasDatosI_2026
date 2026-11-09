@@ -152,7 +152,7 @@ En este reporte se busca encontrar cuales variables tienen la mayor influencia e
 
 # 2 Objetivos
 
-**Objetivo general:** Analizar el impacto de los fundamentos tacticos varios y los factores biometricos en la probabilidad de gane de las selecciones internacionales de voleibol mediante herramientas de analisis y machine learning
+**Objetivo general:** Analizar el impacto de los fundamentos tacticos varios y los factores biometricos en la probabilidad de gane de las selecciones internacionales de voleibol mediante herramientas de analisis y machine learning para predecir de manera precisa encuentros futuros.
 
 **Objetivos específicos:** 
 
