@@ -1,9 +1,13 @@
 ---
-title: "codigo Proyecyo individual"
-author: "Luis Odio"
 format: 
-  typst:
-    font-size: 12pt
+  pdf:
+    fontsize: 12pt
+    geometry: 
+      - top=15mm
+      - bottom=15mm
+      - left=20mm
+      - right=20mm
+    linestretch: 0.95
 execute:
   echo: false
   warning: false
@@ -22,6 +26,7 @@ library(tidyr)
 library(dplyr)
 library(randomForest)
 library(knitr)
+library(kableExtra)
 ```
 
 ```{r}
@@ -91,6 +96,11 @@ equipos.consolidados <- stats.equipo %>%
 ```
 
 ```{r}
+# definimos una semilla para reproducibilidad de los resultados
+set.seed(123)
+```
+
+```{r}
 datos.ml <- stats.partido %>%
   mutate(
     # Aleatorizar quién es A y quién es B
@@ -125,10 +135,12 @@ datos.ml <- stats.partido %>%
   mutate(
     Dif.Altura = Altura.Promedio.A - Altura.Promedio.B,
     Dif.Edad = Edad.Promedio.A - Edad.Promedio.B
-  ) %>%
+  )
+
+datos.ml.numericos <- datos.ml %>%
   # Seleccionamos solo lo que va al modelo
   select(Victoria.A, Dif.Ataques, Dif.Bloqueos, Dif.Aces, Dif.Defensas, Dif.Errores.Rival, Dif.Altura, Dif.Edad) %>%
-  na.omit() 
+  na.omit()
 ```
 
 
@@ -140,27 +152,40 @@ En este reporte se busca encontrar cuales variables tienen la mayor influencia e
 
 # 2 Objetivos
 
-**Objetivo general:** Analizar el impacto de los fundamentos tacticos varios y los factores biometricos en la probabilidad de gane de las selecciones internacionales de voleibol mediante el Analisis de Componentes Principales (PCA) y el algoritmo de machine learnign de bosques aleatorios.
+**Objetivo general:** Analizar el impacto de los fundamentos tacticos varios y los factores biometricos en la probabilidad de gane de las selecciones internacionales de voleibol mediante herramientas de analisis y machine learning
+
+**Objetivos específicos:** 
+
+1. Analizar el impacto de los distintos estils de juego en el exito internacional de las selecciones mediante un analisis de componentes principales(PCA) de los fundamentos tecnicos
+
+2. Determinar la importancia de las variables tecnicas y biometricas en el resultado de un partido haciendo uso de el modelo RandomForest
+
+3. Evaluar la capacidad predictiva del modelo mediante una matriz de confusion.
 
 
-#3 Datos
+# 3 Datos
 
-Los datos analizados fueron publicados por Owen(2026), los datos consisten de 3 archivos: estadisticas por equipo (`teamStats.csv`), por jugador (`playerStats.csv`) y por partido (`matchStats.csv`). Las variables principales son las de los fundamentos del deporte(ataques, defensas, aces etc) y datos biometricos(edad y altura).
+Los datos analizados fueron publicados por Hoag(2026), los datos consisten de 3 archivos: estadisticas por equipo (`teamStats.csv`), por jugador (`playerStats.csv`) y por partido (`matchStats.csv`). Las variables principales son las de los fundamentos del deporte(ataques, defensas, aces etc) y datos biometricos(edad y altura).
 
 A estos datos se les realizo un proceso de limpieza para que coincidiera el nombre del pais en los tres archivos. Para consolidar los datos se  sumaron las estadisticas individuales de cada jugador para encontrar las metricas totales por plantilla y se promedio la edad y altura por pais, para posteriormente unirlo con los datos generales por pais para obtener una base que relacione el ranking con las caracteristicas fisicas y tecnicas de cada pais. finalmente se manipularon las estadisticas por partido para crear una base que contuviera los diferenciales de las variables a evaluar en el RandomForest, en esta se utilizo un 'na.omit()' para evitar sesgos en el algoritmo.
 
-#4 Metodologia
+# 4 Metodologia
 
-Para encontrar los estilos de juego principales utilizo un Analisis de Componentes Principales (PCA) utilizando la funcion `prcomp()` estandarizando los datos. el PCA haciendo uso de la informacion sobre los ataques, bloques, saques y defensas de cada equipo, visualisando las tendencias tacticas y de volumen de juego en un plano cartesiano para revelar tendencias de como estos factores afectan al exito de un equipo
+Para encontrar los estilos de juego principales utilizo un Analisis de Componentes Principales (PCA) utilizando la funcion `prcomp()` (Sigg & Buhmann, 2008) estandarizando los datos. el PCA haciendo uso de la informacion sobre los ataques, bloques, saques y defensas de cada equipo, visualisando las tendencias tacticas y de volumen de juego en un plano cartesiano para revelar tendencias de como estos factores afectan al exito de un equipo
 
 El analisis predictivo se realizo por medio de el algoritmo Random Forest de la libreria `randomForest`(Liaw & Wiener, 2022), el cual construye arboles de decision independientes, en este caso 1000 arboles. Este modelo introduce dos niveles, el primero donde cada arbol se entrena con una muestra distinta de los datos y el segundo donde cada arbol ignora un dato, reduciendo asi la variabilidad del modelo, facilitando asi un posterior calculo de la importancia de cada variable, obsercando como disminuye el error de prediccion cuando dicha variable es utilizada, esto mediante el indice de gini.
 
-Finalmente se construyo una matriz de confusion para observar la precision del modelo, basandose en predicciones Out of Bag, es decir, el dato ignorado por cada arbol es el dato fuera de la bolsa, out of bag, y al modelo se le pide encontrar una prediccion sobre ese dato obligando a usar unicamente los arboles que no lo tomaron en cuenta, evitando que se lleguen a conclusiones incorrectas por los datos de entrenamiento del algoritmo.
+Finalmente se construyo una matriz de confusion para observar la precision del modelo, basandose en predicciones Out of Bag, es decir, el dato ignorado por cada arbol es el dato fuera de la bolsa, out of bag, y al modelo se le pide encontrar una prediccion sobre ese dato obligando a usar unicamente los arboles que no lo tomaron en cuenta, evitando que se lleguen a conclusiones incorrectas por los datos de entrenamiento del algoritmo. Los graficos fueron generados por ggplot2(Wickham et al., 2016).
 
+# 5 Resultados
 
+## 5.1 Analisis de Componentes Principales
 
 
 ```{r}
+#| fig-cap: "Figura 1. Mapa de Estilos de Juego (PCA). Grafico generado por Gemini(Google, 2026)"
+#| fig-height: 4.9
+#| fig-width: 7
 # Seleccionar variables de rendimiento y escalar
 datos.pca <- equipos.consolidados %>% 
   select(Total.Ataques.Jugadores, Total.Bloqueos.Jugadores, Total.Aces.Jugadores, Total.Grandes.Salvadas, Total.Recepciones) %>%
@@ -191,14 +216,19 @@ pca.grafico.visual <- ggplot(pca.grafico, aes(x = PC1, y = PC2, label = Equipo, 
 print(pca.grafico.visual)
 ```
 
+La figura 1 muestra la distribucion de las selecciones segun su estilo de juego, y como estas variables afectan a su ranking mundial. El primer componente (PC1) muestra el volumen general de juego, donde un volumen de juego alto refiere a aquellos equipos cuyos partidos son mas largos y se juegan mas puntos en total. Por otro lado el PC2 muestra la forma de juego de las selecciones, si es ofensiva o defensiva.
+
+A partir del grafico se logra observar como la gran mayoria de los equipos que se encuentran en el top 10 tienen un estilo de juego ofensivo o moderado, es decir se enfocan mas o en igual proporcion en un ataque fuerte  en comparacion a la defensa, sin embargo este estilo tactico no es suficiente para asegurar un lugar alto en el ranking, puesto que equipos como turquia tambien tienen un juego ofensivo, y aun asi se encuentran en el puesto 16 de 18, mientras que Francia se encuentra en el top 3 con un estilo sumamente defensivo, lo que demuestra que no es tan relevante la estrategia con la que se juegue, si no que tan contudente es el equipo con dicha estrategia. Esto explica por que aquellos paises que se encuentran altos en el ranking tienen un volumen bajo de juego, ya que a pesar de la estrategia que utilicen, ya sea ofensiva o defensiva, son contudentes, lo que reduce la cantidad de acciones que se acumulan por punto ganado y en general la cantidad de puntos jugados al ganar los sets y partidos rapidamente por su firmeza en el juego, reduciendo asi su volumen general de juego.
+
+Un caso sumamente interesante es el de japon, puesto que a poseer un volumen de juego sumamente mayor a el de los equipos mas exitosos, se encuentra en el top 4 del ranking general. Japon en comparacion a las demas potencias del deporte, se ve en una desventaja por la altura de sus jugadores la altura promedio mas baja de todo el torneo, y por diferencia de 5 cm, la misma diferencia promedio entre el segundo equipo mas bajo y el mas alto. Esto llevo a Japon a especializar su juego en un sistema hiper-defensivo, compensando su estatura con agilidad y recepcion increiblemente tecnica para lograr desequilibrar al equipo rival con un juego rapido. Teniendo un volumen  alto puesto a que no pueden ser los mas contundentes al ataque, sin embargo siendo consistentes en su defensa y no cometer errores, pueden llegar a forzar un error del rival y llevarse el punto. Mostrando como una especializacion en fundamentos tecnicos pueden superar una desventaja biometrica como es la altura.
+
+## 5.2 Modelo Predictivo
 ```{r}
-
-
-
-set.seed(42)
-
+#| fig-cap: "Figura 2. Fuerza Predictiva de los factores de juego. Grafico generado por Gemini(Google, 2026)"
+#| fig-height: 4
+#| fig-width: 7
  #Entrenar Modelo
- modelo.rf <- randomForest(Victoria.A ~ ., data = datos.ml, ntree = 1000, importance = TRUE)
+ modelo.rf <- randomForest(Victoria.A ~ ., data = datos.ml.numericos, ntree = 1000, importance = TRUE)
 
  #Gráfico de Importancia
 importancia.rf <- as.data.frame(importance(modelo.rf))
@@ -234,12 +264,101 @@ grafico.importancia.final <- ggplot(importancia.rf, aes(x = MeanDecreaseGini, y 
 
 print(grafico.importancia.final)
 ```
+Observando los resultados de la Figura 2, donde se cuantifico el peso relativo de cada variable sobre la predictibilidad mediante la disminucion media de gini, se revela como a pesar de lo creido normalmente en el ambiente del voleibol masculino que la fuerza bruta y los ataques son lo mas determinante para ganar un partido, lo que mas peso tiene sobre quien gana un partido es quien tiene mas defensas exitos, y por un margen bastante amplio, siendo esta variable la mas determinante en el torneo estudiado, con  un valor de 19.02 en el indice de gini. Esto muestra como en el voleibol moderno lo mas importante es la fase de recepcion y armado, conocida como side-out, y como esta fase se aprovecha para una correcta transicion a un contra ataque, por lo que tener un control sobre el primer toque de balon, la defensa, resulta sumamente esencial para ejecutar de manera correcta el sistema de juego que se tenga planteado. Esto permite validar lo discutido en el analis del PCA, donde se discutio como la especializacion de Japon en tacticas defensivas lo llevaron a posicionarse en un rankin alto a pesar de sus desventajas en otros aspectos.
 
+Por otro lado, a pesar de que la defensa los supera por un gran margen, lo que es el ataque en red(10.33), y el primer ataque(el saque, 8.01) siguen teniendo mucho peso, por lo que ser contundentes en el ataque sigue siendo sumamente importante. Ademas se puede observar una relacion clara entre estas dos, puesto que un saque o un ataque contundente pueden llevar a que la defensa del rival no sea exitosa, dejandolos en una situacion de desventaja al ser esta sumamente relevante. De esta manera, una ofensiva fuerte se convierte una forma de aprovechar la estabilidad defensiva propia, y forzar errores en el rival, en los que despues se pueda capitalizar, explicando asi por que el indicador que les sigue es el diferencial en errores con puntuacion de 6.02, mostrando como una presion constante en la red es mas importante que fundamentos reactivos como es el bloqueo(5.31).
+
+Finalmente, en los ultimos puestos se encuentra los diferenciales de altura(4.7) y edad(3.77). Demostrando como a pesar de ser un equipo con poca altura en un deporte historicamente asociado con una gran estatura, y no ser un equipo con mucha veterania, si se tiene una base fuerte en los fundamentos tecnicos, se puede llegar a competir en el alto nivel, sin embargo la altura y la veterania no dejan de ser una base para el potencial de un equipo, no es un diferenciador definitivo.
+
+
+Para concluir el analisis predictivo se utilizo el modelo RandomForest para predecir todos los partidos de los cuales se tenian datos, haciendo uso de predicciones out of bag para no caer en sesgos de informacion, es decir predecir un partido unicamente con los arboles de decision que no tomaron en cuenta sus datos. Los resultados observados en la Figura 3(anexos) muestran una precision de las predicciones de un 85,34%, los resultados de 99 de 116 partidos. Para reproducibilidad de los datos se utilizo una semilla para este reporte, sin embargo al aleatorizar la semilla, se obtuvieron precisiones entre un 79% y un 86%, mostrando que el algortimo es sumamente efectivo prediciendo quien se lleva la victoria en un partido de voleibol masculino.(para observar predicciones del modelo ver  tabla 1 en anexos)
+
+## 5.3 Conclusiones
+
+A partir de este analisis del voleibol masculino moderno, mediante el Analisis de Componentes Principales y el modelo predictivo de Bosques aleatorios, se pueden llegar a 3 conclusiones clave. En primer lugar, se logra observar como la creencia de que en el voleibol masculino el ataque fuerte y superioridad fisica son los determinantes de una victoria, es plenamente una creencia, puesto que no es respaldada por los datos, donde se observa que el primer toque, la defensa, es el pilar fundamental de el voleibol moderno, superando por gran margen a las variables ofensivas, explicando asi como equipos que se ven en desventaja fisica, pueden estar en lo mas alto del ranking si logran una ejecucion tecnica y tactica impecable, como es el caso de Japon.
+
+En segundo lugar, se puede concluir que la ofensiva moderna no es un hecho aislado, si no un mecanismo que aprovecha la defensa propia, y busca destruir la del oponente, esto mediante  la alta fuerza predictiva del ataque y del saque, que demuestran que una alta presion para forzar errores rivales son mas efectivos que fundamentos de reaccion como el bloqueo. Por ultimo, los resultado del modelo, con una precision consistente por encima del 80%, muestran que a pesar de que la altura y la veterania son una potencial base para el exito, una perfeccion de los fundamentos tecnicos y tacticos son un mayor diferenciador para el exito en el alto nivel.
+
+{{< pagebreak >}}
+
+# Referencias
+
+Google. (2026). Gemini [Modelo de lenguaje grande]. https://gemini.google.com
+
+Hoag, O. (2026). VNL 2025 Men's [Conjunto de datos]. Kaggle. https://www.kaggle.com/datasets/owenhoag07/vnl-2025-mens
+
+Liaw, A., & Wiener, M. (2002). Classification and Regression by randomForest. R News, 2(3), 18-22. 
+
+Sigg, C.D., Buhmann, J.M. (2008). “Expectation-Maximization for Sparse and Non-Negative PCA.” In Proc. 25th International Conference on Machine Learning. doi:10.1145/1390156.1390277.
+
+Wickham, H., Chang, W., Henry, L., Lin Pendersen, T., Takahashi, K., Wilke, C., Woo, C., Yutani, H. y
+  Dunnington, D. (2016). ggplot2. Copyright (s.f.) por Posit Solutions. https://ggplot2.tidyverse.org
+  
+  {{< pagebreak >}}
+  
+# Anexos
+
+## anexos.1
 ```{r}
+#| echo: false
+#| warning: false
 
+# Extraer las probabilidades de victoria del modelo Random Forest
+probabilidades <- predict(modelo.rf, type = "prob")
+
+# Construir la tabla con los datos
+tabla.predicciones <- data.frame(
+  `Equipo A` = datos.ml$Nombre.Equipo.A,
+  `Equipo B` = datos.ml$Nombre.Equipo.B,
+  `Probabilidad A` = paste0(round(probabilidades[, "1"] * 100, 1), "%"),
+  `Probabilidad B` = paste0(round(probabilidades[, "0"] * 100, 1), "%"),
+  `Predicción` = ifelse(modelo.rf$predicted == "1", "Gana A", "Gana B"),
+  `Realidad` = ifelse(datos.ml$Victoria.A == "1", "Gana A", "Gana B"),
+  check.names = FALSE 
+)
+
+tabla.predicciones$Es_Error <- tabla.predicciones$`Predicción` != tabla.predicciones$`Realidad`
+
+tabla.reducida <- tabla.predicciones %>%
+  slice_sample(n = 15)
+
+filas.error <- which(tabla.reducida$Es_Error == TRUE)
+
+tabla.imprimir <- tabla.reducida %>% dplyr::select(-Es_Error)
+
+tabla.final <- tabla.imprimir %>%
+  kbl(
+    caption = "Probabilidades de victoria y predicciones del modelo Random Forest(muestra de 25 de 116), tabla generada por gemini(Google, 2026)",
+    align = "c",
+    booktabs = TRUE 
+  ) %>%
+  kable_styling(
+    latex_options = c("striped", "scale_down", "HOLD_position"), 
+    full_width = FALSE,
+    font_size = 10
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#011f4b") %>% 
+  column_spec(5:6, bold = TRUE) 
+
+if (length(filas.error) > 0) {
+  tabla.final <- tabla.final %>%
+    row_spec(filas.error, color = "#990000", background = "#ffe6e6", italic = TRUE)
+}
+
+tabla.final
+```
+
+
+
+
+
+## anexos.2
+```{r}
+#| fig-cap: "Figura 3. Aciertos y Errores del Modelo. Grafico generado por Gemini(Google, 2026)"
+#| fig-width: 7
 # cruza las filas reales vs las predicciones para contar cuántos partidos caen en cada cuadrante (aciertos y errores)
 datos.matriz <- as.data.frame(table(
-  Realidad = ifelse(datos.ml$Victoria.A == "1", "Victoria Real", "Derrota Real"),
+  Realidad = ifelse(datos.ml.numericos$Victoria.A == "1", "Victoria Real", "Derrota Real"),
   Prediccion = ifelse(modelo.rf$predicted == "1", "Predijo Victoria", "Predijo Derrota")
 ))
 
@@ -276,4 +395,6 @@ grafico.matriz <- ggplot(datos.matriz, aes(x = Prediccion, y = Realidad, fill = 
 
 print(grafico.matriz)
 ```
+
+
 
