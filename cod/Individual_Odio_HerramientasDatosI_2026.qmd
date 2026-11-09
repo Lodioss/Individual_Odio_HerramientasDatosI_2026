@@ -331,7 +331,7 @@ tabla.imprimir <- tabla.reducida %>% dplyr::select(-Es_Error)
 
 tabla.final <- tabla.imprimir %>%
   kbl(
-    caption = "Probabilidades de victoria y predicciones del modelo Random Forest(muestra de 25 de 116), tabla generada por gemini(Google, 2026)",
+    caption = "Probabilidades de victoria y predicciones del modelo Random Forest(muestra de 15 de 116), tabla generada por gemini(Google, 2026)",
     align = "c",
     booktabs = TRUE 
   ) %>%
