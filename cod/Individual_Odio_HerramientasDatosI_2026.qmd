@@ -222,6 +222,7 @@ A partir del grafico se logra observar como la gran mayoria de los equipos que s
 
 Un caso sumamente interesante es el de japon, puesto que a poseer un volumen de juego sumamente mayor a el de los equipos mas exitosos, se encuentra en el top 4 del ranking general. Japon en comparacion a las demas potencias del deporte, se ve en una desventaja por la altura de sus jugadores la altura promedio mas baja de todo el torneo, y por diferencia de 5 cm, la misma diferencia promedio entre el segundo equipo mas bajo y el mas alto. Esto llevo a Japon a especializar su juego en un sistema hiper-defensivo, compensando su estatura con agilidad y recepcion increiblemente tecnica para lograr desequilibrar al equipo rival con un juego rapido. Teniendo un volumen  alto puesto a que no pueden ser los mas contundentes al ataque, sin embargo siendo consistentes en su defensa y no cometer errores, pueden llegar a forzar un error del rival y llevarse el punto. Mostrando como una especializacion en fundamentos tecnicos pueden superar una desventaja biometrica como es la altura.
 
+
 ## 5.2 Modelo Predictivo
 ```{r}
 #| fig-cap: "Fuerza Predictiva de los factores de juego. Grafico generado por Gemini(Google, 2026)"
@@ -278,6 +279,8 @@ Para concluir el analisis predictivo se utilizo el modelo RandomForest para pred
 A partir de este analisis del voleibol masculino moderno, mediante el Analisis de Componentes Principales y el modelo predictivo de Bosques aleatorios, se pueden llegar a 3 conclusiones clave. En primer lugar, se logra observar como la creencia de que en el voleibol masculino el ataque fuerte y superioridad fisica son los determinantes de una victoria, es plenamente una creencia, puesto que no es respaldada por los datos, donde se observa que el primer toque, la defensa, es el pilar fundamental de el voleibol moderno, superando por gran margen a las variables ofensivas, explicando asi como equipos que se ven en desventaja fisica, pueden estar en lo mas alto del ranking si logran una ejecucion tecnica y tactica impecable, como es el caso de Japon.
 
 En segundo lugar, se puede concluir que la ofensiva moderna no es un hecho aislado, si no un mecanismo que aprovecha la defensa propia, y busca destruir la del oponente, esto mediante  la alta fuerza predictiva del ataque y del saque, que demuestran que una alta presion para forzar errores rivales son mas efectivos que fundamentos de reaccion como el bloqueo. Por ultimo, los resultado del modelo, con una precision consistente por encima del 80%, muestran que a pesar de que la altura y la veterania son una potencial base para el exito, una perfeccion de los fundamentos tecnicos y tacticos son un mayor diferenciador para el exito en el alto nivel.
+
+A pesar de la alta precision del modelo es importante recalcar que este sigue teniendo limitaciones. La principal limitacion es que se omite completamente la parte mental y animica, los cuales influyen directamente en el rendimiento que puede dar una seleccion de elite. Variables como el manejo de la presion, el momentum animico entre otras resultan dificil de cuantificar, por tanto el modelo asume una ejecucion tecnica a un nivel constante durante todo el partido y en todos los partidos, lo que puede explicar  el margen de error de alrededor del 25% a 15%.
 
 {{< pagebreak >}}
 
