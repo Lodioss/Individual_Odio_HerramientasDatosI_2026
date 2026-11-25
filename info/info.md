@@ -3,7 +3,7 @@ Diccionario de datos:
 
 
 1. Defensa/recepcion: accion realizada por cualquier jugador para evitar que un ataque rival termine en un punto en contra
-2. Defensa/recepcion exitosa: accion realizada por cualquier jugador que evita un punto rival y permita generar un ataque efectivo 
+2. Defensa/recepcion exitosa: accion realizada por cualquier jugador que evita un punto rival y permita generar un ataque efectivo
 3. Ataque: accion realizada por cualquier jugador que tenga por intencion principal ganar un punto
 4. Ace: Un punto directo de un saque
 5. Bloqueo: accion realizada por los jugadores delanteros para bloquear un ataque rival
@@ -11,6 +11,8 @@ Diccionario de datos:
 
 
 Documentacion:
+
+Google. (2026). Gemini \[Modelo de lenguaje grande]. https://gemini.google.com
 
 
 
