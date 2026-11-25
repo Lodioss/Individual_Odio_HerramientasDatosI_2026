@@ -40,7 +40,19 @@ dentro de info:
 
 dentro de res:
 
+&#x09;Fuerza Predictiva de los Factores de Juego.jpeg
+
 &#x09;Indiviudal\_Odio\_HerramientasDatosI\_2026.pdf
+
+&#x09;Mapa de Estilos de Juego(PCA).jpeg
+
+&#x09;Matriz de Confusion.jpeg
+
+&#x09;Presentacion\_Indiviudal\_Odio\_HerramientasDatosI\_2026.pdf
+
+&#x09;Probabilidades de victoria y predicciones del modelo Random Forest.html
+
+
 
 README.md
 
@@ -50,7 +62,7 @@ README.md
 
 
 
-\# Requisitos 
+\# Requisitos
 
 
 
@@ -81,6 +93,8 @@ Paquetes principales:
 &#x09;para generar el reporte academico introducir en la terminal el siguiente comando
 
 &#x09;"quarto render Indiviudal\_Odio\_HerramientasDatosI\_2026.qmd"
+
+&#x09;
 
 
 
